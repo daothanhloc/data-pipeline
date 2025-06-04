@@ -1,22 +1,6 @@
 version: "3.8"
 
 services:
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password123
-    restart: unless-stopped
-    healthcheck:
-      test: mongosh --eval "db.adminCommand('ping')"
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    volumes:
-      - mongodb_data:/data/db
 
   kafka:
     image: confluentinc/cp-kafka:7.5.3
@@ -53,7 +37,5 @@ services:
       - kafka_data:/var/lib/kafka/data
 
 volumes:
-  mongodb_data:
-    name: mongodb_data
   kafka_data:
     name: kafka_data

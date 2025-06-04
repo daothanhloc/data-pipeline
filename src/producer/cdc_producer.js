@@ -46,31 +46,28 @@ class CDCProducer {
 
   scheduleUpdate(collection, documentId) {
     const key = `${collection}:${documentId}`;
-    
-    // Clear existing timer if any
-    if (this.updateTimers.has(key)) {
-      clearTimeout(this.updateTimers.get(key));
-    }
 
-    // Schedule new update
-    const timer = setTimeout(async () => {
-      try {
-        const update = this.pendingUpdates.get(key);
-        if (update) {
-          await this.sendToKafka(collection, update);
-          this.pendingUpdates.delete(key);
-          this.updateTimers.delete(key);
+    if (!this.updateTimers.has(key)) {
+      // Schedule new update
+      const timer = setTimeout(async () => {
+        try {
+          const update = this.pendingUpdates.get(key);
+          if (update) {
+            await this.sendToKafka(collection, update);
+            this.pendingUpdates.delete(key);
+            this.updateTimers.delete(key);
+          }
+        } catch (error) {
+          producerMetrics.errors.inc({ 
+            error_type: 'scheduled_update_error',
+            collection 
+          });
+          logger.error({ err: error, collection, documentId }, 'Failed to process scheduled update');
         }
-      } catch (error) {
-        producerMetrics.errors.inc({ 
-          error_type: 'scheduled_update_error',
-          collection 
-        });
-        logger.error({ err: error, collection, documentId }, 'Failed to process scheduled update');
-      }
-    }, config.updateIntervalMinutes * 3 * 1000);
+      }, config.updateIntervalMinutes * 60 * 1000);
 
-    this.updateTimers.set(key, timer);
+      this.updateTimers.set(key, timer);
+    }
   }
 
   async sendToKafka(collection, event) {
