@@ -28,6 +28,7 @@ class CDCProducer {
       await mongoose.connect(config.sourceMongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        dbName: config.database,
       });
       logger.info('Connected to source MongoDB');
 

@@ -25,6 +25,7 @@ class CDCConsumer {
       await mongoose.connect(config.targetMongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        dbName: config.database,
       });
       logger.info('Connected to target MongoDB');
 
