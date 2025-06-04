@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import { Kafka } from 'kafkajs';
 import config from '../config/config.js';
 import logger from '../utils/logger.js';
-import { producerMetrics } from '../utils/metrics.js';
+import { producerMetrics, register } from '../utils/metrics.js';
+import express from 'express';
 
 class CDCProducer {
   constructor() {
@@ -226,3 +227,15 @@ producer.start().catch((error) => {
   logger.error({ err: error }, 'Fatal error in CDC producer');
   process.exit(1);
 }); 
+
+const app = express();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
+app.listen(3031, () => {
+  logger.info(`Metrics server started on port 3031`);
+});
+  
